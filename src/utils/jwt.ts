@@ -35,13 +35,13 @@ export class TokenStore {
  * @returns
  */
 export function signJwt(payload: Partial<User>) {
-  return jwt.sign(payload, env.jwt_expiry, { expiresIn: env.jwt_expiry });
+  return jwt.sign(payload, env.jwt_secret, { expiresIn: env.jwt_expiry });
 }
 
 export function verifyJwt(token: string) {
   try {
     return jwt.verify(token, env.jwt_secret);
   } catch (err) {
-    return null;
+    throw err;
   }
 }

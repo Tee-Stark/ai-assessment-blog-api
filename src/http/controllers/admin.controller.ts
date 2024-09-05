@@ -4,12 +4,18 @@ import { PostService } from "../../posts";
 import { PostStatus } from "../../posts/posts.model";
 import TYPES from "../../config/inversify.types";
 import { authenticate, authorizeAdmin } from "../middleware/auth";
+import { controller } from "../../utils/http";
 
 function approvePost(postService: PostService) {
   return async (req: Request, res: Response) => {
     try {
       const { postId } = req.params;
-      return await postService.updatePostStatus(postId, PostStatus.PUBLISHED);
+      const updated = await postService.updatePostStatus(
+        postId,
+        PostStatus.PUBLISHED
+      );
+      console.log("returning now");
+      return updated;
     } catch (err) {
       throw err;
     }
@@ -42,13 +48,13 @@ export const adminRouter = (container: Container) => {
     "/post/:postId/publish",
     authenticate,
     authorizeAdmin,
-    approvePost(postService)
+    controller(approvePost(postService))
   );
   router.put(
     "/post/:postId/update",
     authenticate,
     authorizeAdmin,
-    approvePostUpdateAction(postService)
+    controller(approvePostUpdateAction(postService))
   );
   return router;
 };

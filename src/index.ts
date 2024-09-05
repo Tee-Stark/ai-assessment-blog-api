@@ -17,6 +17,7 @@ import { postRouter } from "./http/controllers/post.controller";
 import { PostRepo, PostService } from "./posts";
 import { PostUpdateRepo } from "./posts/post_update.repo";
 import { adminRouter } from "./http/controllers/admin.controller";
+import { initAuth } from "./http/middleware/auth";
 
 async function main() {
   const container = new Container();
@@ -24,7 +25,9 @@ async function main() {
   const db = await connectPostgres();
   container.bind<Knex>(TYPES.Knex).toConstantValue(db);
 
-  container.bind<TokenStore>(TYPES.TokenStore).to(TokenStore);
+  const tokenStore = new TokenStore();
+  container.bind<TokenStore>(TYPES.TokenStore).toConstantValue(tokenStore);
+  initAuth(tokenStore);
   container.bind<UserRepo>(TYPES.UserRepo).to(UserRepo);
   container.bind<UserService>(TYPES.UserService).to(UserService);
   container.bind<PostRepo>(TYPES.PostRepo).to(PostRepo);
@@ -42,7 +45,8 @@ async function main() {
   app.use("/api/v1/users", userRouter(container));
   app.use("/api/v1/posts", postRouter(container));
   app.use("/api/v1/admin", adminRouter(container));
-  app.use(errors.notFound, errors.reporter);
+  app.use(errors.notFound);
+  app.use(errors.reporter());
 
   const PORT = env.port;
   const server = http.createServer(app);

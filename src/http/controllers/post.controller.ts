@@ -1,13 +1,19 @@
 import { Container } from "inversify";
 import { Request, Response } from "express";
 import { PostService } from "../../posts";
-import { Post, PostUpdate } from "../../posts/posts.model";
+import {
+  PendingUpdateExistsErr,
+  Post,
+  PostUpdate
+} from "../../posts/posts.model";
 import express from "express";
 import { controller } from "../../utils/http";
 import TYPES from "../../config/inversify.types";
 import { autoValidate } from "../middleware/validation";
-import { createPostDto } from "./post.dto";
-import { authenticate } from "../middleware/auth";
+import { createPostDto, requestUpdateDto } from "./post.dto";
+import { authenticate, authorizeUser } from "../middleware/auth";
+import { AppError } from "../../utils/error";
+import { StatusCodes } from "http-status-codes";
 
 function createPost(postService: PostService) {
   return async (req: Request, res: Response) => {
@@ -61,6 +67,11 @@ function requestUpdate(postService: PostService) {
       };
       return await postService.createAction(details);
     } catch (err) {
+      if (err instanceof PendingUpdateExistsErr)
+        throw new AppError(
+          StatusCodes.CONFLICT,
+          "there's a pending update for this post"
+        );
       throw err;
     }
   };
@@ -72,13 +83,20 @@ export const postRouter = (container: Container) => {
 
   router.post(
     "/",
+    authenticate,
     autoValidate(createPostDto),
     controller(createPost(postService))
   );
 
   router.get("/", controller(getPublishedPosts(postService)));
   router.get("/:id", controller(getPost(postService)));
-  router.put("/:id", authenticate, requestUpdate(postService));
+  router.put(
+    "/:id",
+    authenticate,
+    authorizeUser,
+    autoValidate(requestUpdateDto),
+    controller(requestUpdate(postService))
+  );
 
   return router;
 };

@@ -7,6 +7,8 @@ export interface User extends Model {
   role: string;
 }
 
+export interface UserResponseDto extends Omit<User, "password"> {}
+
 export class UserAlreadyExists extends Error {
   constructor(email: string) {
     const message = `user ${email} already exists`;

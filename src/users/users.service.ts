@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import TYPES from "../config/inversify.types";
 import { UserRepo } from "./users.repo";
-import { User } from "./users.model";
+import { User, UserResponseDto } from "./users.model";
 import bcrypt from "bcrypt";
 import { UnauthorizedError } from "../utils/error";
 import { signJwt, TokenStore } from "../utils/jwt";
@@ -20,8 +20,14 @@ export class UserService {
 
     const authToken = signJwt(user);
     this.tokenStore.add(authToken);
+    const userData: Partial<UserResponseDto> = {
+      id: user.id,
+      name: user.name,
+      email_address: user.email_address,
+      role: user.role
+    };
 
-    return { ...user, authToken };
+    return { ...userData, authToken };
   }
 
   async signup(user: User) {

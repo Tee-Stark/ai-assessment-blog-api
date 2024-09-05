@@ -23,7 +23,7 @@ export class PostRepo extends Repository<Post> {
       .select(
         "posts.*",
         this.knex.raw(
-          "json_build_object('id', users.id, 'name', users.name, 'email', users.email) as author"
+          "json_build_object('id', users.id, 'name', users.name, 'email', users.email_address) as author"
         )
       )
       .where("posts.id", postId)
@@ -39,7 +39,7 @@ export class PostRepo extends Repository<Post> {
       .select(
         "posts.*",
         this.knex.raw(
-          "json_build_object('id', users.id, 'name', users.name, 'email', users.email) as author"
+          "json_build_object('id', users.id, 'name', users.name, 'email', users.email_address) as author"
         )
       )
       .where(where);
@@ -49,7 +49,7 @@ export class PostRepo extends Repository<Post> {
 
   async update(where: Partial<Post>, update: Partial<Post>, ctx?: Knex) {
     try {
-      const [post] = await this.db(ctx).where(where).update(update, "*");
+      const post = await this.db(ctx).where(where).update(update, "*");
       return post;
     } catch (err) {
       throw err;

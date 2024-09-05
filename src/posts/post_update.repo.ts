@@ -28,7 +28,7 @@ export class PostUpdateRepo extends Repository<PostUpdate> {
       .select(
         "posts.*",
         this.knex.raw(
-          "json_build_object('id', users.id, 'name', users.name, 'email', users.email) as author"
+          "json_build_object('id', users.id, 'name', users.name, 'email', users.email_address) as author"
         )
       )
       .where(where);
