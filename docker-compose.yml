@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3434:3434"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/blog_api
+      - PORT=3434
+      - SERVICE_NAME=AI-BLOG-PLATFORM
+      - DATABASE_NAME=blog_api
+      - DATABASE_URL=postgres://postgres:postgres@localhost:5432/blog_api
+      - JWT_EXPIRY=1h
+      - JWT_SECRET=828245dad997d43f25a8420c1887c9ba2776832634c6cf0ccc888af868577b0f
+
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blog_api
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
